@@ -24,15 +24,15 @@ class HeicToJpgConverter:
         else:
             print(f'Folder already exists with the name {folder_name}')
 
-        # # Create a folder structure where it will store the converted images
-        # if not os.path.exists(f'{folder_name}/heic'):
-        #     try:
-        #         os.makedirs(f'{folder_name}/heic')
-        #         print(f'Folder created successfully with the name {folder_name}/heic')
-        #     except Exception as e:
-        #         print(f"An error occurred while creating the folder: {e}")
-        # else:
-        #     print(f'Folder already exists with the name {folder_name}/heic')
+        # Create a folder structure where it will store the converted images
+        if not os.path.exists(f'{folder_name}/heic'):
+            try:
+                os.makedirs(f'{folder_name}/heic')
+                print(f'Folder created successfully with the name {folder_name}/heic')
+            except Exception as e:
+                print(f"An error occurred while creating the folder: {e}")
+        else:
+            print(f'Folder already exists with the name {folder_name}/heic')
 
         # Create a folder structure where it will store the converted images
         if not os.path.exists(f'{folder_name}/jpg'):
@@ -68,4 +68,4 @@ class HeicToJpgConverter:
 
 if __name__ == "__main__":
     converter = HeicToJpgConverter()
-    converter.convert_heic_to_jpg('TestFolder/11006107550211883488_0_0.heic', 'TestFolder/jpg/11006107550211883488_0_0.jpg')
+    converter.folder_structure()

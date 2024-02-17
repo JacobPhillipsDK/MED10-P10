@@ -1,7 +1,6 @@
 from streetlevel import lookaround
 
 
-
 # panos = lookaround.get_coverage_tile(69150, 40123)
 
 # Print the 100 first panoramas ID
@@ -62,4 +61,3 @@ if __name__ == "__main__":
 
     downloader = LookAroundImageDownloaderFromTile(69150, 40123)
     downloader.image_metaData(downloader.panos)
-
