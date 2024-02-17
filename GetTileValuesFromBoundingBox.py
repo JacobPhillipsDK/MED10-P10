@@ -1,11 +1,13 @@
 import math
 
+
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
     n = 2.0 ** zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)
     ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
     return (xtile, ytile)
+
 
 def get_tiles_in_bbox(top_left_lat, top_left_lon, bottom_right_lat, bottom_right_lon, zoom):
     top_left_tile = deg2num(top_left_lat, top_left_lon, zoom)
@@ -17,6 +19,7 @@ def get_tiles_in_bbox(top_left_lat, top_left_lon, bottom_right_lat, bottom_right
             tiles.append((x, y))
 
     return tiles
+
 
 # Define the bounding box (top left and bottom right coordinates)
 top_left_lat = 57.0516
