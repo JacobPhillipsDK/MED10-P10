@@ -1,46 +1,19 @@
 from PIL import Image
 from pillow_heif import register_heif_opener
 import os
+from FolderStructure import FolderStructure
 
 
-class HeicToJpgConverter:
+class HeicToJpgConverter(FolderStructure):
     def __init__(self):
+        super().__init__()
         register_heif_opener()
-        self.folder_structure()
-        self.folder_name = ""
 
-    def folder_structure(self, folder_name='TestFolder'):
-        # Create a folder structure where it will store the converted images
-        # first we check if the correct folder is already created from the scripts path
-        # if not we create the folder structure
-        self.folder_name = f'{os.path.join(os.path.dirname(__file__), folder_name)}'
-
-        if not os.path.exists(f'{folder_name}'):
-            try:
-                os.makedirs(f'{folder_name}')
-                print(f'Folder created successfully with the name {folder_name}')
-            except Exception as e:
-                print(f"An error occurred while creating the folder: {e}")
-        else:
-            print(f'Folder already exists with the name {folder_name}')
 
         # Create a folder structure where it will store the converted images
-        if not os.path.exists(f'{folder_name}/heic'):
-            try:
-                os.makedirs(f'{folder_name}/heic')
-                print(f'Folder created successfully with the name {folder_name}/heic')
-            except Exception as e:
-                print(f"An error occurred while creating the folder: {e}")
-        else:
-            print(f'Folder already exists with the name {folder_name}/heic')
-
-        # Create a folder structure where it will store the converted images
-        if not os.path.exists(f'{folder_name}/jpg'):
-            try:
-                os.makedirs(f'{folder_name}/jpg')
-                print(f'Folder created successfully with the name {folder_name}/jpg')
-            except Exception as e:
-                print(f"An error occurred while creating the folder: {e}")
+        _FolderStructure = FolderStructure()
+        _FolderStructure.create_folder_structure()
+        _FolderStructure.create_heic_jpg_folders()
 
     def convert_heic_to_jpg(self, heic_file_path, jpg_file_path=None):
 
@@ -68,4 +41,3 @@ class HeicToJpgConverter:
 
 if __name__ == "__main__":
     converter = HeicToJpgConverter()
-    converter.folder_structure()

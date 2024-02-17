@@ -1,9 +1,10 @@
 import os
 import requests
+from FolderStructure import FolderStructure
 
-
-class OpenStreetMapTilesDownload:
+class OpenStreetMapTilesDownload(FolderStructure):
     def __init__(self, url=None, headers=None, debug=False):
+        super().__init__()
         if url is not None:
             self.url = url
         else:
@@ -11,6 +12,7 @@ class OpenStreetMapTilesDownload:
         if headers is not None:
             self.headers = headers
         else:
+            # For some stupid reason, the server requires a legit User-Agent to download the tiles
             self.headers = {
                 'Host': 'tile.openstreetmap.org',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
@@ -31,6 +33,13 @@ class OpenStreetMapTilesDownload:
 
         self.debug = debug
 
+        # Create a folder structure where it will store the converted images
+        _FolderStructure = FolderStructure()
+        _FolderStructure.create_folder_structure()
+        self.folder_to_save_path = _FolderStructure.create_tile_folder()
+
+
+
     @staticmethod
     def debug_mode(zoom, x, y, response, url):
         print("### DEBUG MODE ###")
@@ -46,8 +55,9 @@ class OpenStreetMapTilesDownload:
         if self.debug:
             self.debug_mode(zoom, x, y, response, url)
 
-        # Remove 'https://' from the URL before saving it as a file name
-        file_path = os.path.join(os.getcwd(), f'{url.replace("https://", "").replace("/", "_")}.png')
+        print(self.folder_name)
+
+        file_path = os.path.join(self.folder_to_save_path, f"{zoom}_{x}_{y}.png")
 
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
@@ -72,10 +82,10 @@ class OpenStreetMapTilesDownload:
         else:
             print(f"Failed to download tile: {zoom}/{x}/{y}")
 
-
+# Example usage
 if __name__ == "__main__":
     download_tile = OpenStreetMapTilesDownload(debug=True)
-    download_tile.show_tile(14, 8722, 5373)
+    download_tile.download_tile(14, 8722, 5373)
     # Usage
     # download_tile(14, 8722, 5373)
 # Usage

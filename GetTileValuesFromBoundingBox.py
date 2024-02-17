@@ -63,4 +63,4 @@ bottom_right_lon = 9.9348
 
 if __name__ == "__main__":
     converter = TileCoordinateConverter(top_left_lat, top_left_lon, bottom_right_lat, bottom_right_lon)
-    print(converter.get_tiles_in_bbox())
+    print(len(converter.get_tiles_in_bbox()))
