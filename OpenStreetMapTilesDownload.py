@@ -47,15 +47,13 @@ class OpenStreetMapTilesDownload(FolderStructure):
         print(f'Response: {response.status_code}')
         print(f'URL: {url}')
 
-    def download_tile(self, zoom, x, y):
+    def download_tile(self, zoom, x, y) -> str:
         url = f"{self.url}/{zoom}/{x}/{y}.png"
 
         response = requests.get(url, headers=self.headers)
 
         if self.debug:
             self.debug_mode(zoom, x, y, response, url)
-
-        print(self.folder_name)
 
         file_path = os.path.join(self.folder_to_save_path, f"{zoom}_{x}_{y}.png")
 
@@ -64,6 +62,7 @@ class OpenStreetMapTilesDownload(FolderStructure):
                 f.write(response.content)
         else:
             print(f"Failed to download tile: {zoom}/{x}/{y}")
+        return url
 
     def show_tile(self, zoom, x, y):
         """Download and show the tile in the default image viewer."""

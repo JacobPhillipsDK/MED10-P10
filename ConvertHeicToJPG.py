@@ -41,3 +41,4 @@ class HeicToJpgConverter(FolderStructure):
 
 if __name__ == "__main__":
     converter = HeicToJpgConverter()
+    converter.convert_multiple_heic_to_jpg(converter.heic_path, converter.jpg_path)
