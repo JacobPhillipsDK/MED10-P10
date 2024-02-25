@@ -32,7 +32,7 @@ class TileCoordinateConverter:
         ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n) # Convert latitude to tile coordinate
         return (xtile, ytile)
 
-    def get_tiles_in_bbox(self, zoom=None):
+    def get_tiles_in_bbox(self, zoom=None) ->  list[tuple[int, int]]:
         """
         Get all tiles within the bounding box
         :param top_left_lat:

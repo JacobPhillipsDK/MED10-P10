@@ -11,7 +11,6 @@ class FolderStructure:
             self.folder_name = "TestFolder"
         self.create_folder_structure()
 
-
         self.jpg_path = f'{self.folder_name}/jpg'
         self.heic_path = f'{self.folder_name}/heic'
         self.map_tiles_path = f'{self.folder_name}/map_tiles'
@@ -66,3 +65,13 @@ class FolderStructure:
                 print(f"An error occurred while creating the folder: {e}")
 
         return f'{self.folder_name}/map_tiles'
+
+    def create_tile_folder_coordinate(self, xpos, ypos):
+        # Create a folder structure where it will store the converted images
+        if not os.path.exists(f'{self.folder_name}/heic/{xpos}_{ypos}'):
+            try:
+                os.makedirs(f'{self.folder_name}/heic/{xpos}_{ypos}')
+                if self.debug:
+                    print(f'Folder created successfully with the name {self.folder_name}/heic/{xpos}_{ypos}')
+            except Exception as e:
+                print(f"An error occurred while creating the folder: {e}")
