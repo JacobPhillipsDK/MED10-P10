@@ -27,7 +27,6 @@ class LookAroundImageDownloaderFromTile(CreateImageMetaData):
         self.tile_x = tile_x
         self.tile_y = tile_y
 
-        self.heic_path = f'{self.heic_path}/{tile_x}_{tile_y}'
         self.create_tile_folder_coordinate(xpos=tile_x, ypos=tile_y)
 
         return self.panos
@@ -58,7 +57,7 @@ class LookAroundImageDownloaderFromTile(CreateImageMetaData):
 
         for face in range(0, 4):
             # address = self.get_gps_directions(panorama.lat, panorama.lon).replace(' ', '_').replace(',', '')
-            image_path = f"{self.heic_path}/{panos_ID}_{face}.heic"
+            image_path = f"{self.heic_path}/{tile_xpos}_{tile_ypos}/{panos_ID}_{face}.heic"
             lookaround.download_panorama_face(pano=panorama, path=image_path, face=face, zoom=zoom, auth=self.auth)
 
 
@@ -76,8 +75,8 @@ def download_func_with_downloader(panorama, downloader, tile_xpos, tile_ypos):
 def split_list(panos, num_processes):
     # Prints the length of each split list
     list = [panos[i::num_processes] for i in range(num_processes)]
-    for i in range(num_processes):
-        print(f"Length of split_panos[{i}] = {len(list[i])}")
+    # for i in range(num_processes):
+    #     print(f"Length of split_panos[{i}] = {len(list[i])}")
     return list
 
 
@@ -99,7 +98,7 @@ if __name__ == "__main__":
     # Number of processes you want to run concurrently
     num_processes = os.cpu_count()
 
-    # Use a regular function instead of a lambda
+
     with Pool(num_processes) as pool:
         flat_panos = [item for sublist in split_panos for item in sublist]
         start_time = time.time()  # Start the timer
