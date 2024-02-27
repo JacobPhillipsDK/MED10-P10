@@ -69,15 +69,15 @@ class CreateImageMetaData(FolderStructure):
 
         return panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date
 
-    def match_image_data_to_image(self, URL="URL", tile_xpos="tile_xpos", tile_ypos="tile_ypos"):
+    def match_image_data_to_image(self,  tile_xpos, tile_ypos, URL="URL"):
         # from get_coverage_tile we get the panorama data and we can match it to the image that we have downloaded to then create the metadata csv file
 
         # first we need to get the image name from the image that we have downloaded
         # then we need to get the panorama data from the get_coverage_tile
 
-        images_by_tile = self.get_coverage_tile(69144, 40119)
+        images_by_tile = self.get_coverage_tile(tile_xpos, tile_xpos)
 
-        downloaded_images = os.listdir("TestFolder/heic - Kopi")
+        downloaded_images = os.listdir(f"TestFolder/heic/{tile_xpos}_{tile_ypos}")
         # Extracting the first ID from each filename
         seperated_downloaded_images = [filename.split('_')[0] for filename in downloaded_images]
 

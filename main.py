@@ -14,6 +14,7 @@ from CreateDataSet import CreateImageMetaData
 
 top_left_lat = 57.0537
 top_left_lon = 9.9104
+
 bottom_right_lat = 57.0393
 bottom_right_lon = 9.9331
 
@@ -54,33 +55,44 @@ def main():
         tile_xpos = tiles.get_tiles_in_bbox()[i][0]
         tile_ypos = tiles.get_tiles_in_bbox()[i][1]
 
-        print(f"Downloading tile: {tile_xpos}/{tile_ypos}")
-
-        # Download the images
-
-        panos = Downloader.get_coverage_tile(tile_xpos, tile_ypos)
-        image_counter += len(panos)
-
-        print(f'Got {len(panos) * 4} panoramas')
-
-        split_panos = split_list(panos, num_processes)
-
-        with Pool(num_processes) as pool:
-            flat_panos = [item for sublist in split_panos for item in sublist]
-            start_time = time.time()  # Start the timer
-            pool.starmap(download_func_with_downloader,
-                         [(panorama, Downloader, tile_xpos, tile_ypos) for panorama in flat_panos])
-
-            end_time = time.time()  # End the timer
-
-        print(f"Total time for downloading: {end_time - start_time} seconds")
-        print(f'Image counter: {image_counter} of panos: {len(panos)*4}')
-
         # download_tile = OpenStreetMapTilesDownload()
         # download_tile.download_tile(zoom=17, x=tile_xpos, y=tile_ypos)
 
-    print("Total number of images downloaded from the bounding box: ", image_counter)
-    print("Total number of images found in the bounding box: ", imagelen_counter)
+        url = f"https://tile.openstreetmap.org/17/{tile_xpos}/{tile_ypos}.png"
+
+        metadata = CreateImageMetaData()
+        metadata.match_image_data_to_image(URL=url, tile_xpos=tile_xpos, tile_ypos=tile_ypos)
+
+
+
+    #
+    #     print(f"Downloading tile: {tile_xpos}/{tile_ypos}")
+    #
+    #     # Download the images
+    #
+    #     panos = Downloader.get_coverage_tile(tile_xpos, tile_ypos)
+    #     image_counter += len(panos)
+    #
+    #     print(f'Got {len(panos) * 4} panoramas')
+    #
+    #     split_panos = split_list(panos, num_processes)
+    #
+    #     with Pool(num_processes) as pool:
+    #         flat_panos = [item for sublist in split_panos for item in sublist]
+    #         start_time = time.time()  # Start the timer
+    #         pool.starmap(download_func_with_downloader,
+    #                      [(panorama, Downloader, tile_xpos, tile_ypos) for panorama in flat_panos])
+    #
+    #         end_time = time.time()  # End the timer
+    #
+    #     print(f"Total time for downloading: {end_time - start_time} seconds")
+    #     print(f'Image counter: {image_counter} of panos: {len(panos)*4}')
+    #
+    #     # download_tile = OpenStreetMapTilesDownload()
+    #     # download_tile.download_tile(zoom=17, x=tile_xpos, y=tile_ypos)
+    #
+    # print("Total number of images downloaded from the bounding box: ", image_counter)
+    # print("Total number of images found in the bounding box: ", imagelen_counter)
 
 
 if __name__ == "__main__":
