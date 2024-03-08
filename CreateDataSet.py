@@ -7,6 +7,12 @@ import time
 from random import choice
 from random import randint
 import os
+from geopy.exc import GeocoderUnavailable
+from geopy.geocoders import Nominatim
+from random import choice
+from time import sleep
+from urllib3.exceptions import ConnectTimeoutError
+from requests.exceptions import RetryError
 
 
 class CreateImageMetaData(FolderStructure):
@@ -20,7 +26,7 @@ class CreateImageMetaData(FolderStructure):
         else:
             self.filename = "ImageMetaData.csv"
 
-        self.columns = ['Image Name', 'ID', 'Face', 'Build ID', 'Latitude','Longitude', 'Capture date', 'image_url',
+        self.columns = ['Image Name', 'ID', 'Face', 'Build ID', 'Latitude', 'Longitude', 'Capture date', 'image_url',
                         'Has Blurs', 'tile_URL', 'Coverage Type', 'Image tile', 'Street Address']
         self.df = pd.DataFrame(columns=self.columns)
 
@@ -28,7 +34,6 @@ class CreateImageMetaData(FolderStructure):
         self._FolderStructure = FolderStructure()
         self._FolderStructure.create_folder_structure()
         self.folder_to_save_path = self._FolderStructure.folder_name
-
 
     def append_image_data(self, image_name, panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, image_url,
                           tile_URL, tile_coordinate, address, face_value, has_blur, coverage_type) -> None:
@@ -52,14 +57,12 @@ class CreateImageMetaData(FolderStructure):
         self.df = pd.concat([self.df, new_df], ignore_index=True)  # Concatenate the new DataFrame to the existing one
 
         print(f"Appending data for image {image_name}")
-        print(self.df)  # print the DataFrame to check if the data is being appended
+        print(self.df.shape)
         return None
-
 
     def get_coverage_tile(self, tile_x, tile_y):
         self.panos = lookaround.get_coverage_tile(tile_x, tile_y)
         return self.panos
-
 
     def image_metaData(self, panorama) -> tuple:
         panos_ID = str(panorama.id)
@@ -84,7 +87,6 @@ class CreateImageMetaData(FolderStructure):
 
         return panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile
 
-
     def match_image_data_to_image(self):
         # from get_coverage_tile we get the panorama data and we can match
         # it to the image that we have downloaded to then create the metadata csv file
@@ -101,60 +103,77 @@ class CreateImageMetaData(FolderStructure):
 
             images_by_tile = self.get_coverage_tile(tile_xpos, tile_ypos)
 
-            duplicates_removed = list(set([filename.split('_')[0] for filename in os.listdir(f"{self.heic_path}/{i}")]))
+            duplicates_removed = [filename.split('_')[0] for filename in os.listdir(f"{self.heic_path}/{i}")]
 
             url = f"https://tile.openstreetmap.org/17/{tile_xpos}/{tile_ypos}.png"
 
-            for k in range(len(duplicates_removed)):
+            print(f"len of images_by_tile: {len(images_by_tile)}")
+            print(f"len of duplicates_removed: {len(duplicates_removed)}")
 
-                if int(images_by_tile[k].id) == int(duplicates_removed[k]):
+            for k in os.listdir(f"{self.heic_path}/{i}"):
 
-                    if counter > 1:
-                        break
+                if counter > 1:
+                    break
 
-                    for j in range(0, 4):
-                        # get image data
-                        panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile = self.image_metaData(
-                            images_by_tile[k])
-
-                        # check if panos tile is the same as the downloaded one
-                        # Tile: (69144, 40119, 17)
-                        # seperate so we get the x and y coordinates
-
-                        panos_tile_x = int(panos_tile.split(",")[0].replace("(", ""))
-                        panos_tile_y = int(panos_tile.split(",")[1].replace(")", ""))
-
-                        # we want to check if they match
-                        if panos_tile_x == tile_xpos and panos_tile_y == tile_ypos:
-                            print(f"Tile: {panos_tile} is the same as the downloaded tile: {tile_xpos}_{tile_ypos}")
-
-                            # now we can check if both panos_ID and panos_build_ID are in the downloaded images
-
-                            self.append_image_data(image_name=f'{duplicates_removed[k]}_{j}', panos_ID=panos_ID,
-                                                   panos_build_ID=panos_build_ID, panos_lat=panos_lat,
-                                                   panos_lon=panos_lon, panos_date=panos_date,
-                                                   image_url=panos_permalink, tile_URL=url,
-                                                   tile_coordinate=panos_tile,
-                                                   address=self.get_gps_directions(panos_lat, panos_lon), face_value=j,
-                                                   has_blur=panos_has_blurs, coverage_type=panos_coverage_type)
-
-                    counter += 1
-
+                # for j in range(0, 4):
+                #     # get image data
+                #     panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile = self.image_metaData(
+                #         images_by_tile[k])
+                #
+                #     # check if panos tile is the same as the downloaded one
+                #     # Tile: (69144, 40119, 17)
+                #     # seperate so we get the x and y coordinates
+                #
+                #     panos_tile_x = int(panos_tile.split(",")[0].replace("(", ""))
+                #     panos_tile_y = int(panos_tile.split(",")[1].replace(")", ""))
+                #
+                #     # we want to check if they match
+                #     if panos_tile_x == tile_xpos and panos_tile_y == tile_ypos:
+                #         print(f"Tile: {panos_tile} is the same as the downloaded tile: {tile_xpos}_{tile_ypos}")
+                #
+                #     # now we can
+                #     # check if both
+                #     # panos_ID and panos_build_ID
+                #     # are in the
+                #     # downloaded
+                #     # images
+                #
+                #     self.append_image_data(image_name=f'{duplicates_removed[k]}_{j}', panos_ID=panos_ID,
+                #                            panos_build_ID=panos_build_ID, panos_lat=panos_lat,
+                #                            panos_lon=panos_lon, panos_date=panos_date,
+                #                            image_url=panos_permalink, tile_URL=url,
+                #                            tile_coordinate=panos_tile,
+                #                            address=self.get_gps_directions(panos_lat, panos_lon), face_value=j,
+                #                            has_blur=panos_has_blurs, coverage_type=panos_coverage_type)
+                #     counter += 1
+                #     print(f"Total images done: {counter}")
+                #
+                #     counter += 1
 
     @staticmethod
-    def get_gps_directions(latitude, longitude):
+    def get_gps_directions(latitude, longitude, attempt=1, max_attempts=10):
+        """Recursively get the GPS directions from the latitude and longitude. If the attempt fails, it will retry"""
+
         # random list of user_agents to avoid getting blocked
         user_agents = ["SemesterAgentOne", "ProjectExplorerAgent", "MED10-MASTER-THESIS-PROJECT",
                        "CodeCraftNavigator", "QuantumSemesterSurfer", "ByteBusterNavigator", "PolyglotSemesterSailor",
                        "MetaCodeAdventurer", "SyntaxSeekerExplorer", "AlgorithmicVoyagerAgent", "DataDrivenNavigator",
                        "QuantumBytePioneer"]
 
-        # pick a random user_agent
-        geolocator = Nominatim(user_agent=choice(user_agents))
-        time.sleep(randint(1, 5))  # sleep for a random time between 1 and 5 seconds so we don't get blocked
-        location = geolocator.reverse([latitude, longitude], exactly_one=True)
-        return location.address if location else "No address found."
-
+        try:
+            # pick a random user_agent
+            geolocator = Nominatim(user_agent=choice(user_agents), timeout=10)
+            sleep(1)  # sleep for a short time so we don't get blocked
+            location = geolocator.reverse([latitude, longitude], exactly_one=True)
+            return location.address if location else "No address found."
+        except (ConnectTimeoutError, RetryError, GeocoderUnavailable) as e:
+            if attempt < max_attempts:
+                print(f"Attempt {attempt} failed. Retrying...")
+                sleep(2 ** attempt)  # exponential backoff, waiting longer with each attempt
+                return CreateImageMetaData.get_gps_directions(latitude, longitude, attempt=attempt + 1,
+                                                              max_attempts=max_attempts)
+            else:
+                return "Failed to get GPS directions after multiple attempts."
 
     def save_to_csv(self) -> None:
         """Save the dataframe to a csv file"""
@@ -169,4 +188,4 @@ class CreateImageMetaData(FolderStructure):
 if __name__ == "__main__":
     MetaData = CreateImageMetaData()
     MetaData.match_image_data_to_image()
-    MetaData.save_to_csv()
+    # MetaData.save_to_csv()
