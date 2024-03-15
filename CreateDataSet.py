@@ -93,8 +93,11 @@ class CreateImageMetaData(FolderStructure):
 
         # first we need to get the image name from the image that we have downloaded
         # then we need to get the panorama data from the get_coverage_tile
+        counter = 0
+        counter2 = 0
+        folder_counter = 0
 
-        for i in os.listdir(self.heic_path):
+        for i in sorted(MetaData.split_list()[0]):
 
             tile_xpos = int(i.split("_")[0])
             tile_ypos = int(i.split("_")[1])
@@ -111,22 +114,29 @@ class CreateImageMetaData(FolderStructure):
             # removes duplicates and sorts the list
             duplicates_removed = sorted(list(set(split_list)))
 
-            for k in range(len(duplicates_removed)):
+            folder_counter += 1
+            print(f"[{folder_counter}]  {i} : {len(duplicates_removed)}")
 
-                if images_by_tile[k].id == int(duplicates_removed[k]):
+            for duplicate_id in duplicates_removed:
+                for image in images_by_tile:
+                    if image.id == int(duplicate_id):
+                        for j in range(0, 4):
+                            panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile = self.image_metaData(
+                                image)
+                            self.append_image_data(image_name=f'{duplicate_id}_{j}', panos_ID=panos_ID,
+                                                   panos_build_ID=panos_build_ID, panos_lat=panos_lat,
+                                                   panos_lon=panos_lon,
+                                                   panos_date=panos_date, image_url=panos_permalink, tile_URL=url,
+                                                   tile_coordinate=panos_tile,
+                                                   address=self.get_gps_directions(panos_lat, panos_lon), face_value=j,
+                                                   has_blur=panos_has_blurs, coverage_type=panos_coverage_type)
+                            counter2 += 1
 
-                    for j in range(0, 4):
-                        # # get image data
-                        panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile = self.image_metaData(
-                            images_by_tile[k])
-
-                        self.append_image_data(image_name=f'{duplicates_removed[k]}_{j}', panos_ID=panos_ID,
-                                               panos_build_ID=panos_build_ID, panos_lat=panos_lat,
-                                               panos_lon=panos_lon, panos_date=panos_date,
-                                               image_url=panos_permalink, tile_URL=url,
-                                               tile_coordinate=panos_tile,
-                                               address=self.get_gps_directions(panos_lat, panos_lon), face_value=j,
-                                               has_blur=panos_has_blurs, coverage_type=panos_coverage_type)
+                counter += 1
+                counter += 1
+        print(f"Total number of images: {counter}")
+        print(f"True counter length: {counter * 4}")
+        print(f"if statement counter: {counter2}")
 
     @staticmethod
     def get_gps_directions(latitude, longitude, attempt=1, max_attempts=10):
@@ -152,10 +162,17 @@ class CreateImageMetaData(FolderStructure):
             else:
                 return "Failed to get GPS directions after multiple attempts."
 
+    def split_list(self):
+        folders = os.listdir(self.heic_path)
+
+        list = [folders[i::2] for i in range(2)]
+        for i in range(2):
+            print(f"Length of split_panos[{i}] = {len(list[i])}")
+        return list
+
     def save_to_csv(self) -> None:
         """Save the dataframe to a csv file"""
         self.df.to_csv(f'{self.folder_to_save_path}/{self.filename}', index=False)
-
         print("Saving data to CSV")
         # prints the row and column count of the dataframe
         print(self.df.shape)

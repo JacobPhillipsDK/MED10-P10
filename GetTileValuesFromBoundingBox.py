@@ -27,9 +27,9 @@ class TileCoordinateConverter:
 
         # Convert latitude and longitude to radians
         lat_rad = math.radians(lat_deg)
-        n = 2.0 ** zoom # Number of tiles at the given zoom level
-        xtile = int((lon_deg + 180.0) / 360.0 * n) # Convert longitude to tile coordinate
-        ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n) # Convert latitude to tile coordinate
+        n = 2.0 ** zoom
+        xtile = int((lon_deg + 180.0) / 360.0 * n)
+        ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
         return (xtile, ytile)
 
     def get_tiles_in_bbox(self, zoom=None) ->  list[tuple[int, int]]:
@@ -45,13 +45,30 @@ class TileCoordinateConverter:
         if zoom is None:
             zoom = self.zoom
 
-        top_left_tile = self.deg2num(self.top_left_lat, self.top_left_lon, zoom)
-        bottom_right_tile = self.deg2num(self.bottom_right_lat, self.bottom_right_lon, zoom)
+        # top_left_tile = self.deg2num(self.top_left_lat, self.top_left_lon, zoom)
+        # bottom_right_tile = self.deg2num(self.bottom_right_lat, self.bottom_right_lon, zoom)
+        #
+        # print(f'top_left_tile: {top_left_tile}')
+        # print(f'bottom_right_tile: {bottom_right_tile}')
+        #
+        # tiles = []
+        # for x in range(top_left_tile[0], bottom_right_tile[0] + 1):
+        #     for y in range(top_left_tile[1], bottom_right_tile[1] + 1):
+        #         tiles.append((x, y))
+        #         print(f'x: {x}, y: {y}')
+        # return tiles
+
+        top_left_tile = self.deg2num(57.0516, 9.9142, 17)
+        bottom_right_tile = self.deg2num(57.0425, 9.9348, 17)
 
         tiles = []
         for x in range(top_left_tile[0], bottom_right_tile[0] + 1):
+            print(f'top_left_tile[0], bottom_right_tile[0] + 1: {top_left_tile[0], bottom_right_tile[0] + 1}')
+            print(f'top_left_tile[1], bottom_right_tile[1] + 1: {top_left_tile[1], bottom_right_tile[1] + 1}')
+            print(f'x: {x}')
             for y in range(top_left_tile[1], bottom_right_tile[1] + 1):
                 tiles.append((x, y))
+                print(f'x: {x}, y: {y}')
         return tiles
 
 
