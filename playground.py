@@ -1,4 +1,3 @@
-
 import pandas as pd
 
 from streetlevel import lookaround
@@ -9,17 +8,17 @@ from streetlevel import lookaround
 
 
 def main():
-    headers = ['Image Name', 'ID', 'Face', 'Build ID', 'Latitude', 'Longitude', 'Capture date', 'image_url', 'Has Blurs', 'tile_URL', 'Coverage Type', 'Image tile', 'Street Address']
+    headers = ['Image Name', 'ID', 'Face', 'Build ID', 'Latitude', 'Longitude', 'Capture date', 'image_url',
+               'Has Blurs', 'tile_URL', 'Coverage Type', 'Image tile', 'Street Address']
 
     # loads the csv file into a pandas DataFrame
-    df = pd.read_csv('csv files/ImageMetaData.csv')
-    print(df.head())
+    df = pd.read_csv('csv files/ImageMetaDataSet.csv')
 
     # Drop duplicates based on the 'ID' column, keeping the first occurrence
     df_deduplicated = df.drop_duplicates('ID', keep='first')
 
-
-    #
+    print(len(df), len(df) / 4)
+    print(len(df_deduplicated))
 
     # Save the deduplicated DataFrame to a new CSV file
     df_deduplicated.to_csv('deduplicated_data.csv', index=False)
