@@ -1,10 +1,11 @@
-from GetTileValuesFromBoundingBox import TileCoordinateConverter
-from OpenStreetMapTilesDownload import OpenStreetMapTilesDownload
-from DownloadPanoraImage import LookAroundImageDownloaderFromTile
-from DownloadPanoraImage import download_func_with_downloader, download_faces, split_list, Pool, os, time
-from CreateDataSet import CreateImageMetaData
-import pandas as pd
-import ast  # Import the ast module for literal_eval
+# from GetTileValuesFromBoundingBox import TileCoordinateConverter
+# from OpenStreetMapTilesDownload import OpenStreetMapTilesDownload
+# from DownloadPanoraImage import LookAroundImageDownloaderFromTile
+# from DownloadPanoraImage import download_func_with_downloader, download_faces, split_list, Pool, os, time
+# from CreateDataSet import CreateImageMetaData
+# import ast  # Import the ast module for literal_eval
+import pyrosm_aalborg
+from pyrosm_aalborg.data import sources
 
 # Bounding box coordinates
 # Numbers are taken from openstreetmap where the bounding box is defined by the top-left and bottom-right coordinates
@@ -125,6 +126,12 @@ def main():
     # else:
     #     print("The number of images found in the csv file is not equal to the number of images found in the folder")
     #     print("Missing images: ", image_counter - image_count_counter)
-    pass
+
+
+
+
+    # specify the bounding box from the osm data
+
+
 if __name__ == "__main__":
     main()

@@ -10,6 +10,9 @@ const map = new mapboxgl.Map({
 });
 
 
+// add point
+
+map.
 
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl());
@@ -19,7 +22,7 @@ map.addControl(new mapboxgl.NavigationControl());
 map.on('load', function() {
   map.addSource('single_point', {
     type: 'geojson',
-    data: '../MED10-MAP/geodata/output_smaller.geojson' // Replace with the path to your local GeoJSON file
+    data: '../MED10-MAP/geodata/path.geojson' // Replace with the path to your local GeoJSON file
   });
 
   // Add a layer to render the point
@@ -62,6 +65,9 @@ map.on('move', function() {
   document.getElementById('lat').textContent = center.lat.toFixed(2);
 });
 
+
+
+
 map.on('zoomend', function() {
   // Get the current zoom level
   var zoom = map.getZoom();
@@ -76,6 +82,10 @@ map.on('zoomend', function() {
 
 // Disable the default scroll wheel zoom behavior
 map.scrollZoom.disable();
+
+
+
+
 
 // Add an event listener for the wheel event
 map.getCanvas().addEventListener('wheel', function(e) {
