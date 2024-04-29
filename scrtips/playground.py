@@ -1,3 +1,10 @@
+import time
+from streetlevel import lookaround
+from multiprocessing import Pool
+from CreateDataSet import CreateImageMetaData
+from GetTileValuesFromBoundingBox import TileCoordinateConverter
+import os
+import pandas as pd
 import pandas as pd
 from FolderStructure import FolderStructure
 from streetlevel import lookaround
@@ -19,7 +26,7 @@ class CreateImageMetaData(FolderStructure):
         if filename is not None:
             self.filename = filename
         else:
-            self.filename = "ImageMetaData.csv"
+            self.filename = "TestImageMetaData.csv"
 
         self.columns = ['Image Name', 'ID', 'Face', 'Build ID', 'Latitude', 'Longitude', 'Capture date', 'image_url',
                         'Has Blurs', 'tile_URL', 'Coverage Type', 'Image tile', 'Street Address']
@@ -82,57 +89,6 @@ class CreateImageMetaData(FolderStructure):
 
         return panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile
 
-    def match_image_data_to_image(self):
-        # from get_coverage_tile we get the panorama data and we can match
-        # it to the image that we have downloaded to then create the metadata csv file
-
-        # first we need to get the image name from the image that we have downloaded
-        # then we need to get the panorama data from the get_coverage_tile
-        counter = 0
-        counter2 = 0
-        folder_counter = 0
-
-        for i in sorted(MetaData.split_list()[0]):
-
-            tile_xpos = int(i.split("_")[0])
-            tile_ypos = int(i.split("_")[1])
-
-            images_by_tile = self.get_coverage_tile(tile_xpos, tile_ypos)
-
-            url = f"https://tile.openstreetmap.org/17/{tile_xpos}/{tile_ypos}.png"
-
-            sub_folder_list = os.listdir(f"{self.heic_path}/{tile_xpos}_{tile_ypos}")
-
-            # create new list with only the images without _1, _2, _3, _4
-            split_list = [x.split("_")[0] for x in sub_folder_list]
-
-            # removes duplicates and sorts the list
-            duplicates_removed = sorted(list(set(split_list)))
-
-            folder_counter += 1
-            print(f"[{folder_counter}]  {i} : {len(duplicates_removed)}")
-
-            for duplicate_id in duplicates_removed:
-                for image in images_by_tile:
-                    if image.id == int(duplicate_id):
-                        for j in range(0, 4):
-                            panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile = self.image_metaData(
-                                image)
-                            self.append_image_data(image_name=f'{duplicate_id}_{j}', panos_ID=panos_ID,
-                                                   panos_build_ID=panos_build_ID, panos_lat=panos_lat,
-                                                   panos_lon=panos_lon,
-                                                   panos_date=panos_date, image_url=panos_permalink, tile_URL=url,
-                                                   tile_coordinate=panos_tile,
-                                                   address=self.get_gps_directions(panos_lat, panos_lon), face_value=j,
-                                                   has_blur=panos_has_blurs, coverage_type=panos_coverage_type)
-                            counter2 += 1
-
-                counter += 1
-                counter += 1
-        print(f"Total number of images: {counter}")
-        print(f"True counter length: {counter * 4}")
-        print(f"if statement counter: {counter2}")
-
     @staticmethod
     def get_gps_directions(latitude, longitude, attempt=1, max_attempts=10):
         """Recursively get the GPS directions from the latitude and longitude. If the attempt fails, it will retry"""
@@ -157,14 +113,6 @@ class CreateImageMetaData(FolderStructure):
             else:
                 return "Failed to get GPS directions after multiple attempts."
 
-    def split_list(self):
-        folders = os.listdir(self.heic_path)
-
-        list = [folders[i::2] for i in range(2)]
-        for i in range(2):
-            print(f"Length of split_panos[{i}] = {len(list[i])}")
-        return list
-
     def save_to_csv(self) -> None:
         """Save the dataframe to a csv file"""
         self.df.to_csv(f'{self.folder_to_save_path}/{self.filename}', index=False)
@@ -174,25 +122,35 @@ class CreateImageMetaData(FolderStructure):
         return None
 
 
-    def combine_csv(self, csv1, csv2):
-        # Load the first CSV file into a pandas DataFrame
-        df1 = pd.read_csv(csv1)
+# Define the bounding box (top left and bottom right coordinates) -> Based on the openstreet map
+top_left_lat = 57.0537
+top_left_lon = 9.9104
 
-        # Load the second CSV file into another pandas DataFrame
-        df2 = pd.read_csv(csv2)
+bottom_right_lat = 57.0393
+bottom_right_lon = 9.9331
 
-        # Concatenate both DataFrames into one
-        combined_df = pd.concat([df1, df2])
-
-        # Sort the combined DataFrame by a specific column (e.g., 'column_name')
-        combined_df_sorted = combined_df.sort_values(by='column_name')
-
-        # Save the sorted combined DataFrame to a new CSV file
-        combined_df_sorted.to_csv('combined_sorted.csv', index=False)
-
-        print("Combined and sorted CSV file saved successfully!")
-
+# Exmaple usage
 if __name__ == "__main__":
-    MetaData = CreateImageMetaData()
-    MetaData.match_image_data_to_image()
-    MetaData.save_to_csv()
+    converter = TileCoordinateConverter(top_left_lat, top_left_lon, bottom_right_lat, bottom_right_lon)
+    downloader = CreateImageMetaData()
+
+    list_of_tiles = converter.get_tiles_in_bbox()
+
+
+
+    for x, y in list_of_tiles:
+        panos = downloader.get_coverage_tile(x, y)
+
+        for i in panos:
+            panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date, panos_permalink, panos_coverage_type, panos_has_blurs, panos_tile = downloader.image_metaData(
+                i)
+            address = downloader.get_gps_directions(panos_lat, panos_lon)
+
+            image_name = f'{panos_ID}_{i}'
+            tile_URL = f'https://lookaround.blob.core.windows.net/panoramas/{i.tile}.jpg'
+            image_url = panos_permalink
+
+            downloader.append_image_data(image_name, panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date,
+                                         image_url, tile_URL, panos_tile, address, i, panos_has_blurs, panos_coverage_type)
+
+    downloader.save_to_csv()

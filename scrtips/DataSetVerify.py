@@ -14,7 +14,7 @@ def main():
 
     print("Total number of images downloaded from the bounding box: ", image_counter)
 
-    load_imageMetacsv = pd.read_csv("ImageMetaData_part_1.csv")
+    load_imageMetacsv = pd.read_csv("ImageMetaData.csv")
 
     # Assuming load_imageMetacsv is your DataFrame
     # Convert the string representation of the tuple to an actual tuple

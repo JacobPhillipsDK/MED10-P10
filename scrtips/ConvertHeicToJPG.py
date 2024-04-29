@@ -99,5 +99,5 @@ if __name__ == "__main__":
 
     target = split_list(os.listdir(heic_path), 8)
 
-    with Pool(processes=8) as pool:
+    with Pool(processes=os.cpu_count()) as pool:
         pool.map(process_split_list, target)
