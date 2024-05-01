@@ -1,61 +1,53 @@
-import osmium
-import networkx as nx
-from collections import defaultdict
-from Node import Node
+from collections import deque
+import math
 
-class OSMHandler(osmium.SimpleHandler):
-    def __init__(self):
-        super(OSMHandler, self).__init__()
-        self.graph = nx.Graph()
-        self.nodes = {}
-        self.node_connectivity = defaultdict(list)
+class AStarPathfinder:
+    def __init__(self, graph):
+        self.graph = graph
 
-        self.debug = False
+    def heuristic(self, node1, node2):
+        """Euclidean distance heuristic"""
+        return math.sqrt((node1.latitude - node2.latitude) ** 2 + (node1.longitude - node2.longitude) ** 2)
 
-    def node(self, n):
-        node = Node(n.location.lat, n.location.lon, n.id)
-        self.nodes[n.id] = node
-        self.graph.add_node(node)
+    def find_path(self, start_node, end_node, is_drivable=True):
+        open_set = deque([(0, start_node)])
+        closed_set = set()
+        start_node.g = 0
+        start_node.calculate_total_cost()
 
+        while open_set:
+            current_node = open_set.popleft()[1]
 
-    def way(self, w):
-        if 'highway' in w.tags:
-            road_name = w.tags.get('name', 'Unknown')
-            road_type = w.tags.get('highway', 'Unknown')
-            nodes = [self.nodes[n.ref] for n in w.nodes]
-            edges = list(zip(nodes, nodes[1:]))
-            for n1, n2 in edges:
-                self.graph.add_edge(n1, n2, name=road_name, road_type=road_type)
-                self.node_connectivity[n1].append(n2)
-                self.node_connectivity[n2].append(n1)
-                if self.debug:
-                    print(f"Node {n1.node_id} neighbors: {self.node_connectivity[n1]}")
-                    print(f"Node {n2.node_id} neighbors: {self.node_connectivity[n2]}")
+            if current_node == end_node:
+                path = self.reconstruct_path(current_node)
+                return path
 
-    def post_process(self):
-        for node, neighbors in self.node_connectivity.items():
-            node.neighbors = neighbors
-            node.degree = len(neighbors)
-            if self.debug:
-                print(f"Node {node.node_id} neighbors: {node.neighbors}")
+            closed_set.add(current_node)
 
+            for neighbor in current_node.neighbors:
+                if neighbor in closed_set:
+                    continue
 
-# Parse the OSM file and create the graph
-osm_file = "../aalborg_map.osm"
-handler = OSMHandler()
-handler.apply_file(osm_file)
-graph = handler.graph
+                if is_drivable and 'highway' not in neighbor.tags:
+                    continue
 
+                tentative_g_cost = current_node.g + self.heuristic(current_node, neighbor)
 
-# Print the number of nodes and edges
-print("Number of nodes:", graph.number_of_nodes())
-print("Number of edges:", graph.number_of_edges())
+                if neighbor not in open_set or tentative_g_cost < neighbor.g:
+                    neighbor.parent = current_node
+                    neighbor.g = tentative_g_cost
+                    neighbor.h = self.heuristic(neighbor, end_node)
+                    neighbor.calculate_total_cost()
 
+                    if neighbor not in open_set:
+                        open_set.append((neighbor.f, neighbor))
 
-# print the first 10 nodes
-print("First node:", list(graph.nodes())[:1])
+        return None
 
-# print the first 10 edges
-print("First edge:", list(graph.edges())[:1])
-
-# Get the node with a specific ID
+    def reconstruct_path(self, end_node):
+        path = []
+        node = end_node
+        while node:
+            path.append(node)
+            node = node.parent
+        return list(reversed(path))
