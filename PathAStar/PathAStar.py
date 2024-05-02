@@ -10,6 +10,7 @@ class AStarPathfinder:
         return math.sqrt((node1.latitude - node2.latitude) ** 2 + (node1.longitude - node2.longitude) ** 2)
 
     def find_path(self, start_node, end_node, is_drivable=True):
+        print(f"Start node: {start_node}, End node: {end_node}")
         open_set = deque([(0, start_node)])
         closed_set = set()
         start_node.g = 0
@@ -17,6 +18,7 @@ class AStarPathfinder:
 
         while open_set:
             current_node = open_set.popleft()[1]
+            print(f"Current node: {current_node}")
 
             if current_node == end_node:
                 path = self.reconstruct_path(current_node)
@@ -32,6 +34,7 @@ class AStarPathfinder:
                     continue
 
                 tentative_g_cost = current_node.g + self.heuristic(current_node, neighbor)
+                print(f"Neighbor: {neighbor.id}, Tentative g cost: {tentative_g_cost}")
 
                 if neighbor not in open_set or tentative_g_cost < neighbor.g:
                     neighbor.parent = current_node
@@ -42,6 +45,7 @@ class AStarPathfinder:
                     if neighbor not in open_set:
                         open_set.append((neighbor.f, neighbor))
 
+        print(f"Closed set: {[node.id for node in closed_set]}")
         return None
 
     def reconstruct_path(self, end_node):

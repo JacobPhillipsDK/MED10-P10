@@ -2,7 +2,7 @@ import osmium
 import networkx as nx
 from collections import defaultdict
 from Node import Node
-import json
+
 
 
 class OSMHandler(osmium.SimpleHandler):
