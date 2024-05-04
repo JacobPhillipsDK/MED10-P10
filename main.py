@@ -11,7 +11,6 @@ from pyrosm_aalborg.data import sources
 import os
 
 import pandas as pd
->>>>>>> Stashed changes
 
 # Bounding box coordinates
 # Numbers are taken from openstreetmap where the bounding box is defined by the top-left and bottom-right coordinates
@@ -46,7 +45,7 @@ def main():
         for j in os.listdir(f"TestFolder/heic/{x}_{y}"):
             counter += 1
 
-<<<<<<< Updated upstream
+
     # image_counter = 0
     #
     # for i in os.listdir("TestFolder/heic"):
@@ -93,8 +92,6 @@ def main():
     # specify the bounding box from the osm data
 
 
-=======
-    print(counter)
->>>>>>> Stashed changes
+
 if __name__ == "__main__":
     main()

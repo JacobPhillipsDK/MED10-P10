@@ -41,7 +41,9 @@ class NodeLocator:
         min_distance = float('inf')
 
         for node in self.graph.nodes(data=True):
+            # print(node.__class__)
             node_id, data = node
+            # print(node)
             node_lat = data['latitude']
             node_lon = data['longitude']
             distance = self.haversine(latitude, longitude, node_lat, node_lon)

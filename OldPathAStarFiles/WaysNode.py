@@ -1,12 +1,9 @@
 import json
 import math
-from typing import List, Any
-from NodeLocator import NodeLocator
-import osmium
 from geopy.geocoders import Nominatim
 
 
-class Node():
+class WayNode:
     """
         A node class for A* Pathfinding
         g is cost from start to current Node
@@ -17,6 +14,10 @@ class Node():
     def __init__(self, latitude: float, longitude: float, node_id, cost=0):
         self.latitude = latitude
         self.longitude = longitude
+
+
+        self.node_coordinates = []
+
         self.node_id = node_id
         self.cost = cost  # Cost or weight associated with traveling to this node
 
@@ -24,9 +25,7 @@ class Node():
         self.h = 0  # heuristic based estimated cost for current Node to end Node
         self.f = 0  # total cost of present node i.e. :  f = g + h + cost
 
-        self.tags = {}
 
-        self.include_address = False
 
         self.neighbors = []
         self.parent = None  # Add this line
@@ -49,8 +48,9 @@ class Node():
         self.f = self.g + self.h + self.cost
 
     def set_cost(self, cost):
-        self.cost = cost
-        self.calculate_total_cost()
+        if cost != self.cost:
+            self.cost = cost
+            self.calculate_total_cost()
 
     def set_tags(self, node_tags):
         self.tags = dict(node_tags)
@@ -67,11 +67,8 @@ class Node():
             "parent": self.parent.node_id if self.parent else None  # Add this line
         }
 
-    @staticmethod
-    def get_address(self, latitude, longitude):
-        geolocator = Nominatim(user_agent="PathAStar")
-        location = geolocator.reverse([latitude, longitude], exactly_one=True)
-        return location.address if location else "No address found."
+    _address_cache = {}
+
 
     def get_node_data(self, return_json=False):
         node_data = {
@@ -91,12 +88,9 @@ class Node():
     def get_neighbors(self) -> list:
         return [neighbor.node_id for neighbor in self.neighbors]
 
-    def heuristic(self, end_node):
-        """Euclidean distance heuristic"""
-        return math.sqrt((self.latitude - end_node.latitude) ** 2 + (self.longitude - end_node.longitude) ** 2)
 
 
 if __name__ == "__main__":
     # test example of creating a node
-    node = Node(57.048, 9.918, 1, 10)
+    node = WayNode(57.048, 9.918, 1, 10)
     print(node.metaNodeData())

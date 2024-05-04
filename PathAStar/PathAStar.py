@@ -1,57 +1,48 @@
-from collections import deque
-import math
+import heapq
 
-class AStarPathfinder:
-    def __init__(self, graph):
+
+
+class AStarSearch:
+    def __init__(self, graph, start, end, heuristic_cost, custom_cost):
         self.graph = graph
+        self.start = start
+        self.end = end
+        self.heuristic_cost = heuristic_cost
+        self.custom_cost = custom_cost
 
-    def heuristic(self, node1, node2):
-        """Euclidean distance heuristic"""
-        return math.sqrt((node1.latitude - node2.latitude) ** 2 + (node1.longitude - node2.longitude) ** 2)
+    def a_star_search(self):
+        frontier = []
+        heapq.heappush(frontier, (0, self.start))
+        came_from = {}
+        cost_so_far = {}
+        came_from[self.start] = None
+        cost_so_far[self.start] = 0
 
-    def find_path(self, start_node, end_node, is_drivable=True):
-        print(f"Start node: {start_node}, End node: {end_node}")
-        open_set = deque([(0, start_node)])
-        closed_set = set()
-        start_node.g = 0
-        start_node.calculate_total_cost()
+        while frontier:
+            current_cost, current_node = heapq.heappop(frontier)
 
-        while open_set:
-            current_node = open_set.popleft()[1]
-            print(f"Current node: {current_node}")
+            if current_node == self.end:
+                break
 
-            if current_node == end_node:
-                path = self.reconstruct_path(current_node)
-                return path
+            neighbors = self.graph.neighbors(current_node)
+            for neighbor in neighbors:
+                new_cost = cost_so_far[current_node] + self.custom_cost(current_node, neighbor)
+                if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
+                    cost_so_far[neighbor] = new_cost
+                    priority = new_cost + self.heuristic_cost(neighbor, self.end)
+                    heapq.heappush(frontier, (priority, neighbor))
+                    came_from[neighbor] = current_node
 
-            closed_set.add(current_node)
+        path = self.reconstruct_path(came_from, self.start, self.end)
+        return path
 
-            for neighbor in current_node.neighbors:
-                if neighbor in closed_set:
-                    continue
-
-                if is_drivable and 'highway' not in neighbor.tags:
-                    continue
-
-                tentative_g_cost = current_node.g + self.heuristic(current_node, neighbor)
-                print(f"Neighbor: {neighbor.id}, Tentative g cost: {tentative_g_cost}")
-
-                if neighbor not in open_set or tentative_g_cost < neighbor.g:
-                    neighbor.parent = current_node
-                    neighbor.g = tentative_g_cost
-                    neighbor.h = self.heuristic(neighbor, end_node)
-                    neighbor.calculate_total_cost()
-
-                    if neighbor not in open_set:
-                        open_set.append((neighbor.f, neighbor))
-
-        print(f"Closed set: {[node.id for node in closed_set]}")
-        return None
-
-    def reconstruct_path(self, end_node):
+    def reconstruct_path(self, came_from, start, end):
+        current = end
         path = []
-        node = end_node
-        while node:
-            path.append(node)
-            node = node.parent
-        return list(reversed(path))
+        while current != start:
+            path.append(current)
+            current = came_from[current]
+        path.append(start)
+        path.reverse()
+        return path
+

@@ -11,12 +11,17 @@ graph = ox.graph_from_xml("../bounding_box_map_aalborg.osm", simplify=False)
 drivable_graph = ox.project_graph(ox.utils_graph.truncate.largest_component(graph, strongly=True),
                                   to_crs="EPSG:4326")  # Project to EPSG:4326 for filtering
 
+print(drivable_graph)
+
+
 # Convert the graph to geopandas GeoDataFrames
 gdf_nodes, gdf_edges = ox.graph_to_gdfs(drivable_graph, nodes=True, edges=True, node_geometry=False,
                                         fill_edge_geometry=True)
 
 # Create a new graph from the GeoDataFrames
 drivable_graph = ox.graph_from_gdfs(gdf_nodes, gdf_edges)
+
+print(drivable_graph)
 
 # If you want the graph to be directed
 drivable_graph = drivable_graph.to_directed()
@@ -39,6 +44,8 @@ end_node = ox.nearest_nodes(drivable_graph, end_lat, end_lng)
 
 # Find the shortest path using A*
 path = nx.astar_path(drivable_graph, start_node, end_node, heuristic=heuristic)
+
+print("Path:", path)
 
 # Convert node IDs to coordinates
 path_coords = [(drivable_graph.nodes[node]['y'], drivable_graph.nodes[node]['x']) for node in path]

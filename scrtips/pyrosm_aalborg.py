@@ -38,14 +38,14 @@ class PathPlot:
         # Plot the drivable roads
         self.drive_net.plot(ax=ax, color='blue', linewidth=0.5)
 
-        # # we need to move around so its (9.9175356, 57.0525453) instead of (57.0525453, 9.9175356)
-        # path_coords = [(coord[1], coord[0]) for coord in self.path_coords]
+        # we need to move around so its (9.9175356, 57.0525453) instead of (57.0525453, 9.9175356)
+        path_coords = [(coord[1], coord[0]) for coord in self.path_coords]
 
-        # # Extract x and y coordinates from path_coords
-        # path_x, path_y = zip(*path_coords)
+        # Extract x and y coordinates from path_coords
+        path_x, path_y = zip(*path_coords)
 
-        # # Plot the path of the star
-        # ax.plot(path_x, path_y, color='red', linestyle='--', linewidth=2.5, label='Star Path')
+        # Plot the path of the star
+        ax.plot(path_x, path_y, color='red', linestyle='--', linewidth=2.5, label='Star Path')
 
         # Set plot title
         ax.set_title('Drivable Roads and Star Path in Aalborg', fontsize=14, fontweight='bold')
