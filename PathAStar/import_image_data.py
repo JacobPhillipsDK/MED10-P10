@@ -1,20 +1,17 @@
 import pandas as pd
+import osmnx as ox
 from NodeLocator import NodeLocator
 from osm_to_graph import OSMToGraph
 
 
 def get_image_data_from_graph(csv_file_path):
     osm_to_graph = OSMToGraph("../bounding_box_map_aalborg.osm")
-    drivable_graph = osm_to_graph.drivable_graph
+    drivable_graph = osm_to_graph.get_graph()
 
     NodeFinder = NodeLocator(drivable_graph)
+    print(NodeFinder.find_closest_node(57.03925715937763, 9.93170541875503))
 
     data_frame = pd.read_csv(csv_file_path)
-
-    # Remove duplicates from the DataFrame based on 'ID' column
-    data_frame = data_frame.drop_duplicates(subset=['ID'])
-
-    print("length of data frame after removing dup", len(data_frame))
 
     # Print the first 5 rows of the data frame
     print(data_frame.head())
@@ -28,10 +25,16 @@ def get_image_data_from_graph(csv_file_path):
 
     counter = 0
     for x, y in zip(data_frame['Latitude'], data_frame['Longitude']):
-
-        node_id = NodeFinder.find_closest_node(float(x), float(y))
-        node_match = pd.concat([node_match, pd.DataFrame({'Node ID': [node_id], 'Latitude': [y], 'Longitude': [x]})],
-                               ignore_index=True)
+        if counter > 15:
+            break
+        node_id = ox.nearest_nodes(drivable_graph, x, y)
+        print(f"x: {x}, y: {y}, node_id: {node_id}")
+        if node_match.empty:
+            node_match = pd.DataFrame({'Node ID': [node_id], 'Latitude': [x], 'Longitude': [y]})
+        else:
+            node_match = pd.concat(
+                [node_match, pd.DataFrame({'Node ID': [node_id], 'Latitude': [x], 'Longitude': [y]})],
+                ignore_index=True)
         counter += 1
         print(f"Processed {counter} images")
 
@@ -40,4 +43,4 @@ def get_image_data_from_graph(csv_file_path):
 
 
 if __name__ == "__main__":
-    get_image_data_from_graph("ImageMetaDataSet.csv")
+    get_image_data_from_graph("ImageMetaDataSetNoDup.csv")
