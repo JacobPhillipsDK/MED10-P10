@@ -1,46 +1,84 @@
-import pandas as pd
 import osmnx as ox
-from NodeLocator import NodeLocator
-from osm_to_graph import OSMToGraph
+import pandas as pd
 
 
-def get_image_data_from_graph(csv_file_path):
-    osm_to_graph = OSMToGraph("../bounding_box_map_aalborg.osm")
-    drivable_graph = osm_to_graph.get_graph()
+class NodeMatcher:
+    def __init__(self, graph):
+        self.graph = graph
 
-    NodeFinder = NodeLocator(drivable_graph)
-    print(NodeFinder.find_closest_node(57.03925715937763, 9.93170541875503))
+    def match_nodes(self, lon_lat_list):
+        matched_nodes = []
+        for lon, lat in lon_lat_list:
 
+            try:
+                # Find the nearest node in the graph to the given lat-lon coordinates
+                node = ox.distance.nearest_nodes(self.graph, float(lon), float(lat))
+                matched_nodes.append(node)
+            except:
+                print(f"Error: Could not find a node for coordinates {lon}, {lat}")
+
+        return matched_nodes
+
+
+def get_image_data_from_graph(csv_file_path, graph):
     data_frame = pd.read_csv(csv_file_path)
 
-    # Print the first 5 rows of the data frame
-    print(data_frame.head())
+    # remove columns
+    data_frame.drop(columns=['Build ID'], inplace=True)
+    data_frame.drop(columns=['Capture date'], inplace=True)
+    # Has Blurs
+    data_frame.drop(columns=['Has Blurs'], inplace=True)
+    # Coverage Type
+    data_frame.drop(columns=['Coverage Type'], inplace=True)
+    # Extract latitude and longitude coordinates from the CSV file
+    lon_lat_list = data_frame[['Longitude', 'Latitude']].values.tolist()
 
-    # get the headers of the data frame
-    print(data_frame.columns)
-    print(data_frame[['Latitude', 'Longitude']].values)
+    # Initialize the node matcher with the graph
+    node_matcher = NodeMatcher(graph)
 
-    # Create node match data frame
-    node_match = pd.DataFrame(columns=['Node ID', 'Latitude', 'Longitude'])
+    # Match nodes from the graph to the coordinates from the CSV file
+    matched_nodes = node_matcher.match_nodes(lon_lat_list)
 
-    counter = 0
-    for x, y in zip(data_frame['Latitude'], data_frame['Longitude']):
-        if counter > 15:
-            break
-        node_id = ox.nearest_nodes(drivable_graph, x, y)
-        print(f"x: {x}, y: {y}, node_id: {node_id}")
-        if node_match.empty:
-            node_match = pd.DataFrame({'Node ID': [node_id], 'Latitude': [x], 'Longitude': [y]})
-        else:
-            node_match = pd.concat(
-                [node_match, pd.DataFrame({'Node ID': [node_id], 'Latitude': [x], 'Longitude': [y]})],
-                ignore_index=True)
-        counter += 1
-        print(f"Processed {counter} images")
+    # Add the matched node IDs to the DataFrame
+    data_frame['Node ID'] = matched_nodes
 
-    # Save the node match data frame to a CSV file
-    node_match.to_csv("NodeMatch.csv", index=False)
+    # add new column to the dataframe
+
+    data_frame['City infrastructure'] = 0
+    data_frame['Residential Zone'] = 0
+    data_frame['Commercial Zone'] = 0
+    data_frame['Entertainment Zone'] = 0
+    data_frame['Nature'] = 0
+    data_frame['Harbour'] = 0
+    data_frame['Culture'] = 0
+
+    # # remove duplicates
+    # data_frame.drop_duplicates(subset=['ImageID'], inplace=True)
+
+    # Save the DataFrame to a new CSV file
+    data_frame.to_csv("ImageMetaDataSetWithNodeID.csv", index=False)
 
 
 if __name__ == "__main__":
-    get_image_data_from_graph("ImageMetaDataSetNoDup.csv")
+    # Load your graph from the OSM file
+    osm_file_path = "../bounding_box_map_aalborg.osm"
+    graph = ox.graph_from_xml(osm_file_path, simplify=False)
+
+    lon = 57.0541606239178
+    lat = 9.91177974027744
+
+    # 3029118942
+    # 10916413552
+
+    node = ox.distance.nearest_nodes(graph, float(lon), float(lat))
+    print(node)
+    # # Provide the path to your CSV file containing image metadata
+    # csv_file_path = "../csv files/ImageMetaDataSet.csv"
+    # get_image_data_from_graph(csv_file_path, graph)
+    #
+    # # load csv file
+    # # data_frame = pd.read_csv("ImageMetaDataSetWithNodeID.csv")
+    # # remove duplicates
+    # # data_frame.drop_duplicates(subset=['ID'], inplace=True)
+    # # # save the dataframe to a new csv file
+    # # data_frame.to_csv("ImageDataSetWithNodeIDAndClassification.csv", index=False)

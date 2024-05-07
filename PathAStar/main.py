@@ -19,12 +19,16 @@ def main():
 
     NodeFinder = NodeLocator(drivable_graph)
 
-    image_lat = 57.05268563993586
-    image_lon = 9.910611096550412
+    image_lat = 57.0541606239178
+    image_lon = 9.91177974027744
 
     print(f"node x and y: {image_lat}, {image_lon}")
     print("ox implementation", ox.nearest_nodes(drivable_graph, image_lat, image_lon))
     print("custom code", NodeFinder.find_closest_node(image_lat, image_lon))
+
+
+
+
 
     # Define the start and end coordinates (longitude, latitude)
     start_lng, start_lat = 57.048028567059944, 9.928551711992268

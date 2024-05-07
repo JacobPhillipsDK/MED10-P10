@@ -1,4 +1,5 @@
 import osmnx as ox
+import  pandas as pd
 
 
 class OSMToGraph:
@@ -10,9 +11,7 @@ class OSMToGraph:
 
     # Define a custom cost function for each path
 
-
     # Super Class weight function
-
     # City infrastructure
     # Residential Zone
     # Commercial Zone
@@ -20,6 +19,32 @@ class OSMToGraph:
     # Nature
     # Harbour
     # Culture
+
+    # City infrastructure, Residential Zone, Commercial Zone, Entertainment Zone, Nature, Harbour, Culture
+    def initialize_custom_data(self, file_pathj):
+        # Read custom data from CSV file and store it as node attributes
+        try:
+            # Read custom data from CSV file and store it as node attributes
+            custom_data_df = pd.read_csv(file_pathj)  # Replace "custom_data.csv" with your CSV file path
+            # Iterate over rows in the DataFrame and add custom data as attributes to nodes
+            for index, row in custom_data_df.iterrows():
+                node_id = row['Node ID']
+
+                custom_values = {
+                    'city_infrastructure': row['City infrastructure'],
+                    'residential_zone': row['Residential Zone'],
+                    'commercial_zone': row['Commercial Zone'],
+                    'entertainment_zone': row['Entertainment Zone'],
+                    'nature': row['Nature'],
+                    'harbour': row['Harbour'],
+                    'culture': row['Culture']
+                }
+                # Add custom data as attributes to nodes
+                self.drivable_graph.nodes[node_id].update(custom_values)
+        except FileNotFoundError:
+            print("Error: Could not read the custom data CSV file.")
+            return
+
 
 
     def custom_cost(self, node1, node2):
@@ -38,7 +63,7 @@ class OSMToGraph:
             if road_type in ['motorway', 'trunk']:
                 road_type_factor = 10  # Make motorways and trunk roads 5 times more expensive
             elif road_type == 'primary':
-                road_type_factor = 2  # Make primary roads 3 times more expensive
+                road_type_factor = 3  # Make primary roads 3 times more expensive
             elif road_type == 'secondary':
                 road_type_factor = 2  # Make secondary roads 2 times more expensive
             else:
@@ -65,3 +90,13 @@ class OSMToGraph:
         for u, v, k, data in self.drivable_graph.edges(keys=True, data=True):
             data['weight'] = self.custom_cost(u, v)
             # print(data)
+
+
+if __name__ == "__main__":
+    osm_to_graph = OSMToGraph("../bounding_box_map_aalborg.osm")
+    osm_to_graph.modify_graph()
+    drivable_graph = osm_to_graph.get_graph()
+    # osm_to_graph.initialize_custom_data("ImageMetaDataSetWithNodeID.csv")
+    print(drivable_graph.nodes(data=True))
+    # print(drivable_graph.edges(data=True))
+
