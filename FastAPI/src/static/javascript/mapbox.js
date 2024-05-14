@@ -101,3 +101,4 @@ map.getCanvas().addEventListener('wheel', function(e) {
   // Set the new zoom level
   map.setZoom(newZoom);
 });
+

@@ -1,4 +1,4 @@
-<<<<<<< Updated upstream
+
 # from GetTileValuesFromBoundingBox import TileCoordinateConverter
 # from OpenStreetMapTilesDownload import OpenStreetMapTilesDownload
 # from DownloadPanoraImage import LookAroundImageDownloaderFromTile
@@ -7,7 +7,7 @@
 # import ast  # Import the ast module for literal_eval
 import pyrosm_aalborg
 from pyrosm_aalborg.data import sources
-=======
+
 import os
 
 import pandas as pd
