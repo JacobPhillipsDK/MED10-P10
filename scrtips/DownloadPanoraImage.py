@@ -27,7 +27,7 @@ class LookAroundImageDownloaderFromTile(CreateImageMetaData):
         self.tile_x = tile_x
         self.tile_y = tile_y
 
-        self.create_tile_folder_coordinate(xpos=tile_x, ypos=tile_y)
+        self.create_tile_folder_coordinate(xpos=tile_x, ypos=tile_y, foldername="heic")
 
         return self.panos
 
@@ -55,7 +55,7 @@ class LookAroundImageDownloaderFromTile(CreateImageMetaData):
         if zoom is None:
             zoom = self.zoom
 
-        for face in range(0, 4):
+        for face in range(0, 6):
             # address = self.get_gps_directions(panorama.lat, panorama.lon).replace(' ', '_').replace(',', '')
             image_path = f"{self.heic_path}/{tile_xpos}_{tile_ypos}/{panos_ID}_{face}.heic"
             lookaround.download_panorama_face(pano=panorama, path=image_path, face=face, zoom=zoom, auth=self.auth)
@@ -89,14 +89,15 @@ if __name__ == "__main__":
     panos = downloader.get_coverage_tile(tile_xpos, tile_ypos)
 
 
-    print(f'Got {len(downloader.panos)*4} panoramas')
+    print(f'Got {len(downloader.panos)*6} panoramas')
 
     timer = time.time()
 
-    split_panos = split_list(panos, 8)
+    num_processes = os.cpu_count()
+
+    split_panos = split_list(panos, num_processes)
 
     # Number of processes you want to run concurrently
-    num_processes = os.cpu_count()
 
 
     with Pool(num_processes) as pool:

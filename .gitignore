@@ -172,3 +172,5 @@ json_folder/
 corrected_json_files/
 
 aalborg_map.osm
+
+FastAPI/src/static/test/test/

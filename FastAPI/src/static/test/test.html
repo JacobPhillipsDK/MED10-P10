@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A simple example</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <style>
+        #panorama {
+            width: 1500px;
+            height: 600px;
+        }
+
+
+        .pnlm-load-box {
+            z-index: -999;
+            opacity: 0;
+        }
+
+        .myButton {
+            background-color: #4CAF50; /* Green background */
+            border: none; /* No border */
+            color: white; /* White text */
+            padding: 15px 32px; /* Some padding */
+            text-align: center; /* Centered text */
+            text-decoration: none; /* No underline */
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer; /* Mouse pointer on hover */
+        }
+
+        .myButton:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div id="panorama"></div>
+
+<button class="myButton">Button 1</button>
+<button class="myButton">Button 2</button>
+
+<script>
+    var viewer = pannellum.viewer('panorama', {
+        "default": {
+            "firstScene": "scene1",
+            "showLoading": false,
+            "autoLoad": true
+        },
+        "scenes": {
+            "scene1": {
+                "type": "equirectangular",
+                "panorama": "test/11006107550211883488_1.jpg",
+                "autoLoad": true,
+                "showLoading": false,
+
+            },
+            "scene2": {
+                "type": "equirectangular",
+                "panorama": "test/11006107550211883488_1.jpg",
+                "showLoading": false,
+
+            },
+            "scene3": {
+                "type": "equirectangular",
+                "panorama": "test/11006107550211883488_1.jpg",
+                "showLoading": false,
+
+            },
+            "scene4": {
+                "type": "equirectangular",
+                "panorama": "test/11006107550211883488_1.jpg",
+                "showLoading": false,
+
+            },
+             "scene5": {
+                "type": "equirectangular",
+                "panorama": "test/11006107550211883488_1.jpg",
+                "showLoading": false,
+
+            },
+            "scene6": {
+                "type": "equirectangular",
+                "panorama": "test/11006107550211883488_1.jpg",
+                "showLoading": false,
+
+            },
+
+        }
+    });
+
+    var scenes = ['scene1', 'scene2', 'scene3', 'scene4', 'scene5', 'scene6', 'scene7', 'scene8', 'scene9'];
+    var currentSceneIndex = 0;
+
+    // Preload images
+    var images = ['test1.jpg', 'test2.jpg', 'test3.jpg', 'test4.jpg', 'test5.jpg', 'test6.jpg', 'test7.jpg', 'test8.jpg', 'test9.jpg'];
+    images.forEach(function (img) {
+        var image = new Image();
+        image.src = img;
+    });
+
+    document.addEventListener('keyup', function (event) {
+        if (event.key === 'Enter') {
+            console.log('Enter key pressed');
+            currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
+            viewer.loadScene(scenes[currentSceneIndex]);
+            // Calculate the difference in milliseconds
+
+        }
+    });
+</script>
+
+</body>
+</html>
