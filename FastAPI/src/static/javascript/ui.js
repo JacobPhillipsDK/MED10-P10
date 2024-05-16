@@ -2,6 +2,11 @@ function toggleSideUI() {
     var sideUI = document.querySelector('.SideUI');
     var arrowButton = document.querySelector('.arrow-button');
 
+    // If the arrow button is hidden, return immediately
+    if (arrowButton.style.display === 'none') {
+        return;
+    }
+
     // we need to find the <i> under the .arrow-button
     var arrowIcon = arrowButton.querySelector('i');
     if (parseInt(sideUI.style.right) === 0) {
@@ -37,3 +42,28 @@ function toggleClick(element) {
         }, 500); // After the animation duration
     }
 }
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Get the close button
+    const closeButton = document.querySelector('.close');
+
+    // Add click event listener
+    closeButton.addEventListener('click', function() {
+        // Get the modal
+        const modal = document.getElementById('myModal');
+
+        // Hide the modal
+        modal.style.display = 'none';
+
+        // Get the elements to show
+        const topInfoBar = document.querySelector(".top-info-bar");
+        const sideUI = document.querySelector(".SideUI");
+        const arrowButton = document.querySelector(".arrow-button");
+
+        // Show the elements
+        topInfoBar.style.display = "flex";
+        sideUI.style.display = "block";
+        arrowButton.style.display = "flex";
+    });
+});

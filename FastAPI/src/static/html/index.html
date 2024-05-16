@@ -26,6 +26,12 @@
     <script src="https://kit.fontawesome.com/865b557d09.js" crossorigin="anonymous"></script>
 
     <script src="../javascript/ui.js"></script>
+    <script src="../javascript/virtualWalk.js"></script>
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
 
 </head>
 
@@ -79,6 +85,10 @@
         </div>
     </div>
 
+    <div>
+        <button id="startVirtuallyWalk">Start Virtually Walk</button>
+    </div>
+
 
     <div class="SideUI-container-text">
         <p>Path sightseeing attractions</p>
@@ -111,7 +121,20 @@
 
 <div id='map'></div>
 
- <script src="../javascript/app.js"></script>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="panorama"></div>
+        <div class="button-container">
+            <button class="myButton" id="back">Go backward</button>
+            <button class="myButton"  id="forward">Go forward</button>
+    </div>
+
+</div>
+
+
+<script src="../javascript/app.js"></script>
 
 
 </body>
