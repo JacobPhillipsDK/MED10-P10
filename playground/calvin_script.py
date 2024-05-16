@@ -1,27 +1,98 @@
-from CreateDataSet import CreateImageMetaData
 import os
 import io
 from streetlevel import lookaround
 from PIL import Image
-from GetTileValuesFromBoundingBox import TileCoordinateConverter
 import multiprocessing
 from pillow_heif import register_heif_opener
 
 import time
+import math
 
 
-class LookAroundImageDownloaderFromTile(CreateImageMetaData):
+class TileCoordinateConverter:
+    """
+    Based on The bounding box is defined by the top-left and bottom-right coordinates
+    from openstreetmap we can calculate the tiles within the bounding box.
+    """
+
+    def __init__(self, top_left_lat, top_left_lon, bottom_right_lat, bottom_right_lon, zoom=17):
+        self.zoom = zoom
+        self.top_left_lat = top_left_lat
+        self.top_left_lon = top_left_lon
+        self.bottom_right_lat = bottom_right_lat
+        self.bottom_right_lon = bottom_right_lon
+
+    def LonLat2tile(self, lat_deg, lon_deg, zoom=None):
+        """
+        Convert latitude and longitude to tile coordinates
+        :param lat_deg:
+        :param lon_deg:
+        :param zoom:
+        :return:
+        """
+        if zoom is None:
+            zoom = self.zoom
+
+        # Convert latitude and longitude to radians
+        lat_rad = math.radians(lat_deg)
+        n = 2.0 ** zoom
+        xtile = int((lon_deg + 180.0) / 360.0 * n)
+        ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
+        return (xtile, ytile)
+
+    def get_tiles_in_bbox(self, zoom=None) -> list[tuple[int, int]]:
+        """
+        Get all tiles within the bounding box
+        :param top_left_lat:
+        :param top_left_lon:
+        :param bottom_right_lat:
+        :param bottom_right_lon:
+        :param zoom:
+        :return:
+        """
+        if zoom is None:
+            zoom = self.zoom
+
+        top_left_tile = self.LonLat2tile(self.top_left_lat, self.top_left_lon, zoom)
+        bottom_right_tile = self.LonLat2tile(self.bottom_right_lat, self.bottom_right_lon, zoom)
+        #
+        # print(f'top_left_tile: {top_left_tile}')
+        # print(f'bottom_right_tile: {bottom_right_tile}')
+        #
+        # tiles = []
+        # for x in range(top_left_tile[0], bottom_right_tile[0] + 1):
+        #     for y in range(top_left_tile[1], bottom_right_tile[1] + 1):
+        #         tiles.append((x, y))
+        #         print(f'x: {x}, y: {y}')
+        # return tiles
+
+        # top_left_tile = self.LonLat2tile(57.0516, 9.9142, 17)
+        # bottom_right_tile = self.LonLat2tile(57.0425, 9.9348, 17)
+
+        tiles = []
+        for x in range(top_left_tile[0], bottom_right_tile[0] + 1):
+            # print(f'top_left_tile[0], bottom_right_tile[0] + 1: {top_left_tile[0], bottom_right_tile[0] + 1}')
+            # print(f'top_left_tile[1], bottom_right_tile[1] + 1: {top_left_tile[1], bottom_right_tile[1] + 1}')
+            # print(f'x: {x}')
+            for y in range(top_left_tile[1], bottom_right_tile[1] + 1):
+                tiles.append((x, y))
+            # print(f'x: {x}, y: {y}')
+        return tiles
+
+
+class LookAroundImageDownloaderFromTile:
     def __init__(self, zoom=0, debug=False):
         super().__init__()
         self.auth = lookaround.Authenticator()
         self.zoom = 1  # zoom (int) – The zoom level. 0 is highest, 7 is lowest. | Lowest means less detailed
         self.panos = None
 
-        self.heic_path = self._FolderStructure.heic_path
         self.debug = debug
 
         self.tile_x = None
         self.tile_y = None
+
+        self.foldername = "jpg"
 
     def get_coverage_tile(self, tile_x, tile_y):
         self.panos = lookaround.get_coverage_tile(tile_x, tile_y)
@@ -33,6 +104,21 @@ class LookAroundImageDownloaderFromTile(CreateImageMetaData):
         self.create_tile_folder_coordinate(xpos=tile_x, ypos=tile_y, foldername="jpg")
 
         return self.panos
+
+    def create_tile_folder_coordinate(self, xpos, ypos, foldername=None):
+        """
+        Create a folder structure for the images
+        :param xpos:
+        :param ypos:
+        :param foldername:
+        :return:
+        """
+
+        if foldername is None:
+            foldername = self.foldername
+
+        if not os.path.exists(f"{foldername}/{xpos}_{ypos}"):
+            os.makedirs(f"{foldername}/{xpos}_{ypos}")
 
     def image_metaData(self, panorama) -> tuple:
         panos_ID = str(panorama.id)
@@ -64,7 +150,12 @@ class LookAroundImageDownloaderFromTile(CreateImageMetaData):
 
             panos_ID, panos_build_ID, panos_lat, panos_lon, panos_date = self.image_metaData(panorama)
 
-            image_path = f"{self.jpg_path}/{tile_xpos}_{tile_ypos}/{panos_ID}_{zoom}.jpg"
+
+            # second check if the folder exists
+            if not os.path.exists(f"{self.foldername}/{tile_xpos}_{tile_ypos}"):
+                os.makedirs(f"{self.foldername}/{tile_xpos}_{tile_ypos}")
+
+            image_path = f"{self.foldername}/{tile_xpos}_{tile_ypos}/{panos_ID}_{zoom}.jpg"
 
             faces = []
             for face_idx in range(0, 6):
@@ -114,8 +205,31 @@ if __name__ == "__main__":
 
     downloader = LookAroundImageDownloaderFromTile()
 
+
+    # creates folders :
+
+    # create jpg folder
+    if os.path.exists("jpg"):
+        pass
+    else:
+        os.makedirs("jpg", exist_ok=True)
+
+
+    folder_counter = 0
     for i in tiles.get_tiles_in_bbox():
+        x = i[0]
+        y = i[1]
+
+        os.makedirs(f"jpg/{x}_{y}", exist_ok=True)
+        folder_counter += 1
+
+    print("Number of folders created: ", folder_counter)
+
+        # create folder for each tile
+
+    for i in tiles.get_tiles_in_bbox()[::-1]:
         x, y = i
+        print(f"Downloading images for tile: {x}, {y}")
         panos = downloader.get_coverage_tile(x, y)
 
         numb_process = 3
