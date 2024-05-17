@@ -15,7 +15,7 @@ def heuristic(graph, a, b):
 
 def main():
     # Load the drivable graph of Aalborg
-    osm_to_graph = OSMToGraph("../bounding_box_map_aalborg.osm")
+    osm_to_graph = OSMToGraph("../bounding_box_map_aalborg.osm", "ImageMetaDataSetWithNodeID2.csv")
     drivable_graph = osm_to_graph.drivable_graph
 
     NodeFinder = NodeLocator(drivable_graph)
